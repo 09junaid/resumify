@@ -1,11 +1,12 @@
 import { Outlet } from "react-router";
+import Nabvar from "../components/Nabvar";
 
 const AppLayout = () => {
   return (
     <main>
-      <h1>App Layout</h1>
       <div>
         <div>
+          <Nabvar />
           <Outlet />
         </div>
       </div>
