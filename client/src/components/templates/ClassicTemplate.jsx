@@ -130,6 +130,7 @@ const ClassicTemplate = ({ data, accentColor }) => {
               >
                 <div>
                   <li className="font-semibold text-gray-800 ">{proj.name}</li>
+                  <li className=" text-gray-800 ">{proj.type}</li>
                   <p className="text-gray-600">{proj.description}</p>
                 </div>
               </div>
