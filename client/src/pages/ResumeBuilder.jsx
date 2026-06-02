@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import PersonalInfoForm from "../components/PersonalInfoForm";
 import ResumePreview from "../components/ResumePreview";
+import TemplateSelector from "../components/shared/TemplateSelector";
+import ColorPicker from "../components/shared/ColorPicker";
 
 const ResumeBuilder = () => {
   const { resumeId } = useParams();
@@ -78,7 +80,10 @@ const ResumeBuilder = () => {
               />
               {/* Section Navigation */}
               <div className="flex justify-between items-center mb-6 border-b border-gray-300 py-1">
-                <div></div>
+                <div className="flex items-center gap-2">
+                  <TemplateSelector selectedTemplate={resumeData.template} onChange={(template)=>setResumeData(prev=>({...prev,template}))}/>
+                    <ColorPicker selectedColor={resumeData.accent_color} onChange={(color)=>setResumeData(prev=>({...prev,accent_color:color}))}/>
+                </div>
                 <div className="flex items-center">
                   {activeSectionIndex !== 0 && (
                     <button
