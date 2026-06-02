@@ -7,7 +7,7 @@ const FeatureSection = () => {
     <>
       <div
         id="features"
-        className="flex flex-col items-center my-10 scroll-mt-12"
+        className="flex flex-col items-center mt-0 mb-12 scroll-mt-12"
       >
         <div className="flex items-center gap-2 text-sm text-green-600 bg-green-400/10 rounded-full px-4 py-1">
           <Zap width={14} />
@@ -20,7 +20,7 @@ const FeatureSection = () => {
           }
         />
 
-        <div className="flex flex-col md:flex-row items-center justify-center xl:-mt-10">
+        <div className="flex flex-col md:flex-row items-center justify-center xl:-mt-6">
           <img
             className="max-w-2xl w-full xl:-ml-32"
             src="https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/features/group-image-1.png"
