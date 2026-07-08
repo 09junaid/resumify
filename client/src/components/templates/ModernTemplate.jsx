@@ -83,6 +83,51 @@ const ModernTemplate = ({ data, accentColor }) => {
           </section>
         )}
 
+        {/* Skills */}
+        {data.skills && data.skills.length > 0 && (
+          <section className="mb-8">
+            <h2 className="text-2xl font-light mb-4 pb-2 border-b border-gray-200">
+              Skills
+            </h2>
+
+            <div className="flex flex-wrap gap-2">
+              {data.skills.map((skill, index) => (
+                <span
+                  key={index}
+                  className="px-3 py-1 text-sm text-white rounded-full"
+                  style={{ backgroundColor: accentColor }}
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Education */}
+        {data.education && data.education.length > 0 && (
+          <section className="mb-8">
+            <h2 className="text-2xl font-light mb-4 pb-2 border-b border-gray-200">
+              Education
+            </h2>
+
+            <div className="space-y-4">
+              {data.education.map((edu, index) => (
+                <div key={index}>
+                  <h3 className="font-semibold text-gray-900">
+                    {edu.degree} {edu.field && `in ${edu.field}`}
+                  </h3>
+                  <p style={{ color: accentColor }}>{edu.institution}</p>
+                  <div className="flex justify-between items-center text-sm text-gray-600">
+                    <span>{formatDate(edu.graduation_date)}</span>
+                    {edu.gpa && <span>GPA: {edu.gpa}</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* Experience */}
         {data.experience && data.experience.length > 0 && (
           <section className="mb-8">
@@ -153,52 +198,33 @@ const ModernTemplate = ({ data, accentColor }) => {
           </section>
         )}
 
-        <div className="grid sm:grid-cols-2 gap-8">
-          {/* Education */}
-          {data.education && data.education.length > 0 && (
-            <section>
-              <h2 className="text-2xl font-light mb-4 pb-2 border-b border-gray-200">
-                Education
-              </h2>
+        {/* Certifications */}
+        {data.certifications && data.certifications.length > 0 && (
+          <section className="mt-8">
+            <h2 className="text-2xl font-light mb-4 pb-2 border-b border-gray-200">
+              Certifications
+            </h2>
+            <ul className="list-disc pl-5 space-y-1 text-gray-700">
+              {data.certifications.map((c, index) => (
+                <li key={index}>{c}</li>
+              ))}
+            </ul>
+          </section>
+        )}
 
-              <div className="space-y-4">
-                {data.education.map((edu, index) => (
-                  <div key={index}>
-                    <h3 className="font-semibold text-gray-900">
-                      {edu.degree} {edu.field && `in ${edu.field}`}
-                    </h3>
-                    <p style={{ color: accentColor }}>{edu.institution}</p>
-                    <div className="flex justify-between items-center text-sm text-gray-600">
-                      <span>{formatDate(edu.graduation_date)}</span>
-                      {edu.gpa && <span>GPA: {edu.gpa}</span>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* Skills */}
-          {data.skills && data.skills.length > 0 && (
-            <section>
-              <h2 className="text-2xl font-light mb-4 pb-2 border-b border-gray-200">
-                Skills
-              </h2>
-
-              <div className="flex flex-wrap gap-2">
-                {data.skills.map((skill, index) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1 text-sm text-white rounded-full"
-                    style={{ backgroundColor: accentColor }}
-                  >
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </section>
-          )}
-        </div>
+        {/* Achievements */}
+        {data.achievements && data.achievements.length > 0 && (
+          <section className="mt-8">
+            <h2 className="text-2xl font-light mb-4 pb-2 border-b border-gray-200">
+              Achievements
+            </h2>
+            <ul className="list-disc pl-5 space-y-1 text-gray-700">
+              {data.achievements.map((a, index) => (
+                <li key={index}>{a}</li>
+              ))}
+            </ul>
+          </section>
+        )}
       </div>
     </div>
   );

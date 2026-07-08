@@ -6,7 +6,6 @@ import {
   Phone,
   User,
 } from "lucide-react";
-import React from "react";
 import { FiLinkedin } from "react-icons/fi";
 
 const PersonalInfoForm = ({

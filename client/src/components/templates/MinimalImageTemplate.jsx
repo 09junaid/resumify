@@ -70,9 +70,23 @@ const MinimalImageTemplate = ({ data, accentColor }) => {
                         </div>
                     </section>
 
+                    {/* Skills */}
+                    {data.skills && data.skills.length > 0 && (
+                        <section className="mb-8">
+                            <h2 className="text-sm font-semibold tracking-widest text-zinc-600 mb-3">
+                                SKILLS
+                            </h2>
+                            <ul className="space-y-1 text-sm">
+                                {data.skills.map((skill, index) => (
+                                    <li key={index}>{skill}</li>
+                                ))}
+                            </ul>
+                        </section>
+                    )}
+
                     {/* Education */}
                     {data.education && data.education.length > 0 && (
-                        <section className="mb-8">
+                        <section>
                             <h2 className="text-sm font-semibold tracking-widest text-zinc-600 mb-3">
                                 EDUCATION
                             </h2>
@@ -87,20 +101,6 @@ const MinimalImageTemplate = ({ data, accentColor }) => {
                                     </div>
                                 ))}
                             </div>
-                        </section>
-                    )}
-
-                    {/* Skills */}
-                    {data.skills && data.skills.length > 0 && (
-                        <section>
-                            <h2 className="text-sm font-semibold tracking-widest text-zinc-600 mb-3">
-                                SKILLS
-                            </h2>
-                            <ul className="space-y-1 text-sm">
-                                {data.skills.map((skill, index) => (
-                                    <li key={index}>{skill}</li>
-                                ))}
-                            </ul>
                         </section>
                     )}
                 </aside>
@@ -177,6 +177,34 @@ const MinimalImageTemplate = ({ data, accentColor }) => {
                                     </div>
                                 ))}
                             </div>
+                        </section>
+                    )}
+
+                    {/* Certifications */}
+                    {data.certifications && data.certifications.length > 0 && (
+                        <section className="mt-8">
+                            <h2 className="text-sm uppercase tracking-widest font-semibold" style={{ color: accentColor }}>
+                                CERTIFICATIONS
+                            </h2>
+                            <ul className="list-disc list-inside text-sm text-zinc-700 space-y-1 mt-3">
+                                {data.certifications.map((c, index) => (
+                                    <li key={index}>{c}</li>
+                                ))}
+                            </ul>
+                        </section>
+                    )}
+
+                    {/* Achievements */}
+                    {data.achievements && data.achievements.length > 0 && (
+                        <section className="mt-8">
+                            <h2 className="text-sm uppercase tracking-widest font-semibold" style={{ color: accentColor }}>
+                                ACHIEVEMENTS
+                            </h2>
+                            <ul className="list-disc list-inside text-sm text-zinc-700 space-y-1 mt-3">
+                                {data.achievements.map((a, index) => (
+                                    <li key={index}>{a}</li>
+                                ))}
+                            </ul>
                         </section>
                     )}
                 </main>

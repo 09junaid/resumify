@@ -1,87 +1,147 @@
-import React from 'react'
-import { Briefcase, Plus, Sparkles, Trash2 } from 'lucide-react'
+import { Briefcase, PlusIcon, Trash2Icon } from "lucide-react";
+import AiButton from "./AiButton";
+
+const emptyItem = {
+  company: "",
+  position: "",
+  start_date: "",
+  end_date: "",
+  description: "",
+  is_current: false,
+};
+
+const inputClass =
+  "mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors text-sm";
 
 const ExperienceForm = ({ data = [], onChange }) => {
-  const addExperience=()=>{
-    const newExperience = {
-      company:"",
-      position:"",
-      start_date:"",
-      end_date:"",
-      description:"",
-      is_current:false
-    }
-    onChange([...data,newExperience])
-  }
+  const update = (index, field, value) => {
+    const next = data.map((item, i) =>
+      i === index ? { ...item, [field]: value } : item,
+    );
+    onChange(next);
+  };
 
-  const removeExperience = (index) => {
-    const updated = data.filter((_,i)=>i!==index);
-    onChange(updated)
-  }
+  const addItem = () => onChange([...data, { ...emptyItem }]);
+  const removeItem = (index) => onChange(data.filter((_, i) => i !== index));
 
-  const updateExperience  = (index, field, value) =>{
-    const updated = [...data];
-    updated[index] = {...updated[index],[field]:value}
-    onChange(updated)
-  }
   return (
-    <div className='space-y-6'>
-       <div className='flex items-center justify-between'>
-            <div className='flex flex-col gap-2 text-lg font-semibold text-gray-900'>
-              <h3>Experience</h3>
-              <p className='text-sm text-gray-500'>Add your job experience</p>
-            </div>
-            <button onClick={addExperience} className='flex items-center gap-2 px-3 py-1 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors'>
-              <Plus className='size-4'/>
-              Add Experience
-            </button>
+    <div>
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">Experience</h3>
+          <p className="text-sm text-gray-600">Where have you worked?</p>
         </div>
-        {data.length === 0 ? (
-          <div className='text-center py-8 text-gray-500'>
-            <Briefcase className='w-12 h-12 mx-auto mb-3 text-gray-300'/>
-            <p>No work experience added yet.</p>
-            <p className='text-sm'>Click "Add Experience" to get started.</p>
+        <button
+          type="button"
+          onClick={addItem}
+          className="inline-flex items-center gap-1 rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700 transition-colors"
+        >
+          <PlusIcon className="size-4" /> Add
+        </button>
+      </div>
+
+      <div className="mt-5 space-y-6">
+        {data.map((item, index) => (
+          <div
+            key={index}
+            className="relative rounded-lg border border-gray-200 p-4 pt-8"
+          >
+            <button
+              type="button"
+              onClick={() => removeItem(index)}
+              className="absolute top-2 right-2 text-slate-400 hover:text-red-600 transition-colors"
+              aria-label="Remove experience"
+            >
+              <Trash2Icon className="size-4" />
+            </button>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="text-sm font-medium text-gray-600">
+                  Position
+                </label>
+                <input
+                  className={inputClass}
+                  value={item.position || ""}
+                  onChange={(e) => update(index, "position", e.target.value)}
+                  placeholder="Senior Developer"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-600">
+                  Company
+                </label>
+                <input
+                  className={inputClass}
+                  value={item.company || ""}
+                  onChange={(e) => update(index, "company", e.target.value)}
+                  placeholder="Acme Inc."
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-600">
+                  Start date
+                </label>
+                <input
+                  type="month"
+                  className={inputClass}
+                  value={item.start_date || ""}
+                  onChange={(e) => update(index, "start_date", e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-600">
+                  End date
+                </label>
+                <input
+                  type="month"
+                  disabled={item.is_current}
+                  className={`${inputClass} disabled:bg-slate-100`}
+                  value={item.is_current ? "" : item.end_date || ""}
+                  onChange={(e) => update(index, "end_date", e.target.value)}
+                />
+              </div>
+            </div>
+
+            <label className="mt-3 flex items-center gap-2 text-sm text-gray-600">
+              <input
+                type="checkbox"
+                checked={item.is_current || false}
+                onChange={(e) => update(index, "is_current", e.target.checked)}
+              />
+              I currently work here
+            </label>
+
+            <div className="mt-3">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-gray-600">
+                  Description
+                </label>
+                <AiButton
+                  field="experience"
+                  content={item.description || ""}
+                  context={{ position: item.position, company: item.company }}
+                  onResult={(text) => update(index, "description", text)}
+                />
+              </div>
+              <textarea
+                rows={3}
+                className={`${inputClass} resize-y`}
+                value={item.description || ""}
+                onChange={(e) => update(index, "description", e.target.value)}
+                placeholder="What did you accomplish in this role?"
+              />
+            </div>
           </div>
-        ):(
-          <div className='space-y-4'>
-              {data.map((experience,index)=>(
-                <div key={index} className='p-4 border border-gray-200 rounded-lg space-y-3'>
-                  <div className='flex justify-between items-start'>
-                    <h4>Experience #{index+1}</h4>
-                    <button onClick={()=>removeExperience(index)} className='text-red-500 hover:text-red-700 transition-colors'>
-                      <Trash2 className='size-4'/>
-                    </button>
-                  </div>
-                  <div className='grid md:grid-cols-2 gap-3'>
-                    <input value={experience.company || ""} onChange={(e)=>updateExperience(index,"company",e.target.value)} type="text" placeholder='Company Name' className='px-3 py-2 text-sm rounded-lg'/>
-
-                    <input value={experience.position || ""} onChange={(e)=>updateExperience(index,"position",e.target.value)} type="text" placeholder='Job Title' className='px-3 py-2 text-sm rounded-lg'/>
-
-                    <input value={experience.start_date || ""} onChange={(e)=>updateExperience(index,"start_date",e.target.value)} type="month" className='px-3 py-2 text-sm rounded-lg'/>
-
-                    <input value={experience.end_date || ""} onChange={(e)=>updateExperience(index,"end_date",e.target.value)} type="month"
-                    disabled={experience.is_current} className='px-3 py-2 text-sm rounded-lg disabled:bg-gray-100'/>
-                  </div>
-                  <label className='flex items-center gap-2'>
-                    <input type='checkbox' checked={experience.is_current||false} onChange={(e)=>{updateExperience(index,"is_current",e.target.checked?true:false)}} className='rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer'/>
-                    <span className='text-sm text-gray-700'>Currently working here</span>
-                  </label>
-                  <div className='space-y-2'>
-                    <div className='flex items-center justify-between'>
-                      <label className='text-sm font-medium text-gray-700'>Job Description</label>
-                      <button className='flex items-center gap-1 px-2 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors disabled:opacity-50'>
-                        <Sparkles className='w-3 h-3'/>
-                        Enhance with AI
-                      </button>
-                    </div>
-                    <textarea value={experience.description || ""} onChange={(e)=>updateExperience(index,"description",e.target.value)} rows={4} className='w-full text-sm px-3 py-2 rounded-lg resize-none' placeholder='Describe your key responsibilities and achievements...'/>
-                  </div>
-                </div>
-              ))}
-          </div>
+        ))}
+        {data.length === 0 && (
+          <p className="flex items-center gap-2 text-sm text-slate-400">
+            <Briefcase className="size-4" /> No experience added yet.
+          </p>
         )}
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default ExperienceForm
+export default ExperienceForm;

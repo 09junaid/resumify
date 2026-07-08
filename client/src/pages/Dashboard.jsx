@@ -8,58 +8,121 @@ import {
   UploadCloudIcon,
   XIcon,
 } from "lucide-react";
-import { dummyResumeData } from "../assets/assets";
 import { useNavigate } from "react-router";
+import { resumesApi } from "../api/resumes.js";
+import { uploadsApi } from "../api/uploads.js";
+import { useAuth } from "../context/AuthContext.jsx";
+import { useToast } from "../context/ToastContext.jsx";
 
 const Dashboard = () => {
   const colors = ["#9933ea", "#d97706", "#dc2626", "#0284c7", "#16a34a"];
+  const { user } = useAuth();
+  const toast = useToast();
   const [allResumes, setAllResumes] = useState([]);
   const [showCreateResume, setShowCreateResume] = useState(false);
   const [showUploadResume, setShowUploadResume] = useState(false);
   const [title, setTitle] = useState("");
   const [resume, setResume] = useState(null);
   const [editResumeId, setEditResumeId] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [busy, setBusy] = useState(false);
 
   const navigate = useNavigate();
 
-  const loadAllResumes = async () => {
-    setAllResumes(dummyResumeData);
-  };
-
   const createResume = async (e) => {
     e.preventDefault();
-    setShowCreateResume(false);
-    navigate(`/app/builder/resume123`);
+    setBusy(true);
+    try {
+      const { resume: created } = await resumesApi.create({ title });
+      setShowCreateResume(false);
+      setTitle("");
+      toast.success("Let's build it out.", "Resume created");
+      navigate(`/app/builder/${created._id}`);
+    } catch (err) {
+      toast.error(err.message, "Could not create resume");
+    } finally {
+      setBusy(false);
+    }
   };
+
   const uploadResume = async (e) => {
     e.preventDefault();
-    setShowUploadResume(false);
-    navigate(`/app/builder/resume123`);
+    if (!resume) {
+      toast.error("Please choose a file to upload.", "No file selected");
+      return;
+    }
+    setBusy(true);
+    try {
+      const { url } = await uploadsApi.file(resume);
+      const { resume: created } = await resumesApi.create({
+        title,
+        sourceFile: url,
+      });
+      setShowUploadResume(false);
+      setTitle("");
+      setResume(null);
+      toast.success("Your file was uploaded.", "Resume added");
+      navigate(`/app/builder/${created._id}`);
+    } catch (err) {
+      toast.error(err.message, "Upload failed");
+    } finally {
+      setBusy(false);
+    }
   };
 
   const editTitle = async (e) => {
     e.preventDefault();
-    setEditResumeId("");
+    setBusy(true);
+    try {
+      const { resume: updated } = await resumesApi.update(editResumeId, { title });
+      setAllResumes((prev) =>
+        prev.map((r) => (r._id === updated._id ? updated : r)),
+      );
+      setEditResumeId("");
+      setTitle("");
+      toast.success("Title updated.", "Saved");
+    } catch (err) {
+      toast.error(err.message, "Could not update title");
+    } finally {
+      setBusy(false);
+    }
   };
 
-  const deleteResume = async (id) => {
-    const confirm = window.confirm(
-      "Are you sure you want to delete this resume?",
-    );
-    if (confirm) {
-      setAllResumes((prev) => prev.filter((resume) => resume._id !== id));
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setBusy(true);
+    try {
+      await resumesApi.remove(deleteTarget._id);
+      setAllResumes((prev) =>
+        prev.filter((resume) => resume._id !== deleteTarget._id),
+      );
+      toast.success(`"${deleteTarget.title}" was deleted.`, "Done");
+      setDeleteTarget(null);
+    } catch (err) {
+      toast.error(err.message, "Could not delete resume");
+    } finally {
+      setBusy(false);
     }
   };
 
   useEffect(() => {
-    loadAllResumes();
+    let active = true;
+    resumesApi
+      .list()
+      .then((data) => active && setAllResumes(data.resumes || []))
+      .catch((err) => active && toast.error(err.message, "Failed to load resumes"));
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
     <div>
       <div className="max-w-7xl mx-auto px-4 py-8">
         <p className="text-2xl font-medium mb-6 bg-linear-to-r from-slate-600 to-slate-700 bg-clip-text text-transparent sm:hidden">
-          Welcome, Junaid Arshad
+          Welcome, {user?.name || "there"}
         </p>
+
         <div className="flex gap-4">
           <button
             onClick={() => setShowCreateResume(true)}
@@ -87,7 +150,7 @@ const Dashboard = () => {
             return (
               <button
                 onClick={() => navigate(`/app/builder/${resume._id}`)}
-                key={index}
+                key={resume._id || index}
                 className="relative w-full sm:max-w-36 h-48 flex flex-col items-center justify-center rounded-lg gap-2 border group hover:shadow-lg transition-all duration-300 cursor-pointer"
                 style={{
                   background: `linear-gradient(135deg,${baseColor}10,${baseColor}40)`,
@@ -116,7 +179,7 @@ const Dashboard = () => {
                 >
                   <TrashIcon
                     className="size-7 p-1.5 hover:bg-white/50 rounded text-slate-700 transition-colors"
-                    onClick={() => deleteResume(resume._id)}
+                    onClick={() => setDeleteTarget(resume)}
                   />
                   <PencilIcon
                     onClick={() => {
@@ -143,15 +206,18 @@ const Dashboard = () => {
             >
               <h2 className="text-xl font-bold mb-4">Create a Resume</h2>
               <input
-                onChange={(e) => setTitle(e.target.files)}
+                onChange={(e) => setTitle(e.target.value)}
                 value={title}
                 type="text"
                 placeholder="Enter resume title"
-                className="w-full px-4 py-2 mb-4 focus:border-green-600 ring-green-600"
+                className="w-full px-4 py-2 mb-4 border border-slate-300 rounded focus:border-green-600 focus:ring-1 focus:ring-green-600 outline-none"
                 required
               />
-              <button className="w-full py-2 bg-green-600 text-white rounded hover:bg-green-700 transiton-colors">
-                Create Resume
+              <button
+                disabled={busy}
+                className="w-full py-2 bg-green-600 text-white rounded hover:bg-green-700 transiton-colors disabled:opacity-60"
+              >
+                {busy ? "Creating…" : "Create Resume"}
               </button>
               <XIcon
                 className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
@@ -175,11 +241,11 @@ const Dashboard = () => {
             >
               <h2 className="text-xl font-bold mb-4">Upload Resume</h2>
               <input
-                onChange={(e) => setTitle(e.target.files)}
+                onChange={(e) => setTitle(e.target.value)}
                 value={title}
                 type="text"
                 placeholder="Enter resume title"
-                className="w-full px-4 py-2 mb-4 focus:border-green-600 ring-green-600"
+                className="w-full px-4 py-2 mb-4 border border-slate-300 rounded focus:border-green-600 focus:ring-1 focus:ring-green-600 outline-none"
                 required
               />
               <div>
@@ -207,14 +273,18 @@ const Dashboard = () => {
                   className="hidden"
                 />
               </div>
-              <button className="w-full py-2 bg-green-600 text-white rounded hover:bg-green-700 transiton-colors">
-                Upload Resume
+              <button
+                disabled={busy}
+                className="w-full py-2 bg-green-600 text-white rounded hover:bg-green-700 transiton-colors disabled:opacity-60"
+              >
+                {busy ? "Uploading…" : "Upload Resume"}
               </button>
               <XIcon
                 className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
                 onClick={() => {
                   setShowUploadResume(false);
                   setTitle("");
+                  setResume(null);
                 }}
               />
             </div>
@@ -232,15 +302,18 @@ const Dashboard = () => {
             >
               <h2 className="text-xl font-bold mb-4">Edit Resume Title</h2>
               <input
-                onChange={(e) => setTitle(e.target.files)}
+                onChange={(e) => setTitle(e.target.value)}
                 value={title}
                 type="text"
                 placeholder="Enter resume title"
-                className="w-full px-4 py-2 mb-4 focus:border-green-600 ring-green-600"
+                className="w-full px-4 py-2 mb-4 border border-slate-300 rounded focus:border-green-600 focus:ring-1 focus:ring-green-600 outline-none"
                 required
               />
-              <button className="w-full py-2 bg-green-600 text-white rounded hover:bg-green-700 transiton-colors">
-                Update
+              <button
+                disabled={busy}
+                className="w-full py-2 bg-green-600 text-white rounded hover:bg-green-700 transiton-colors disabled:opacity-60"
+              >
+                {busy ? "Updating…" : "Update"}
               </button>
               <XIcon
                 className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
@@ -251,6 +324,52 @@ const Dashboard = () => {
               />
             </div>
           </form>
+        )}
+
+        {deleteTarget && (
+          <div
+            onClick={() => !busy && setDeleteTarget(null)}
+            className="fixed inset-0 z-20 flex items-center justify-center bg-black/70 backdrop-blur"
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-sm overflow-hidden rounded-2xl bg-white p-6 shadow-[0_30px_80px_rgba(15,23,42,0.35)]"
+            >
+              <div className="flex flex-col items-center text-center">
+                <span className="grid size-14 place-items-center rounded-full bg-red-50">
+                  <TrashIcon className="size-6 text-red-600" />
+                </span>
+                <h2 className="mt-4 text-lg font-semibold text-slate-900">
+                  Delete resume?
+                </h2>
+                <p className="mt-1.5 text-sm leading-6 text-slate-500">
+                  <span className="font-medium text-slate-700">
+                    “{deleteTarget.title}”
+                  </span>{" "}
+                  permanently delete ho jayega. Ye action undo nahi ho sakta.
+                </p>
+              </div>
+
+              <div className="mt-6 flex gap-3">
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => setDeleteTarget(null)}
+                  className="h-11 flex-1 rounded-full border border-slate-200 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-60"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={confirmDelete}
+                  className="h-11 flex-1 rounded-full bg-red-600 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-60"
+                >
+                  {busy ? "Deleting…" : "Delete"}
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

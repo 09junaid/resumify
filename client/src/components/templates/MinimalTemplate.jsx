@@ -39,6 +39,45 @@ const MinimalTemplate = ({ data, accentColor }) => {
                 </section>
             )}
 
+            {/* Skills */}
+            {data.skills && data.skills.length > 0 && (
+                <section className="mb-10">
+                    <h2 className="text-sm uppercase tracking-widest mb-6 font-medium" style={{ color: accentColor }}>
+                        Skills
+                    </h2>
+
+                    <div className="text-gray-700">
+                        {data.skills.join(" • ")}
+                    </div>
+                </section>
+            )}
+
+            {/* Education */}
+            {data.education && data.education.length > 0 && (
+                <section className="mb-10">
+                    <h2 className="text-sm uppercase tracking-widest mb-6 font-medium" style={{ color: accentColor }}>
+                        Education
+                    </h2>
+
+                    <div className="space-y-4">
+                        {data.education.map((edu, index) => (
+                            <div key={index} className="flex justify-between items-baseline">
+                                <div>
+                                    <h3 className="font-medium">
+                                        {edu.degree} {edu.field && `in ${edu.field}`}
+                                    </h3>
+                                    <p className="text-gray-600">{edu.institution}</p>
+                                    {edu.gpa && <p className="text-sm text-gray-500">GPA: {edu.gpa}</p>}
+                                </div>
+                                <span className="text-sm text-gray-500">
+                                    {formatDate(edu.graduation_date)}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )}
+
             {/* Experience */}
             {data.experience && data.experience.length > 0 && (
                 <section className="mb-10">
@@ -85,42 +124,31 @@ const MinimalTemplate = ({ data, accentColor }) => {
                 </section>
             )}
 
-            {/* Education */}
-            {data.education && data.education.length > 0 && (
-                <section className="mb-10">
+            {/* Certifications */}
+            {data.certifications && data.certifications.length > 0 && (
+                <section className="mt-10">
                     <h2 className="text-sm uppercase tracking-widest mb-6 font-medium" style={{ color: accentColor }}>
-                        Education
+                        Certifications
                     </h2>
-
-                    <div className="space-y-4">
-                        {data.education.map((edu, index) => (
-                            <div key={index} className="flex justify-between items-baseline">
-                                <div>
-                                    <h3 className="font-medium">
-                                        {edu.degree} {edu.field && `in ${edu.field}`}
-                                    </h3>
-                                    <p className="text-gray-600">{edu.institution}</p>
-                                    {edu.gpa && <p className="text-sm text-gray-500">GPA: {edu.gpa}</p>}
-                                </div>
-                                <span className="text-sm text-gray-500">
-                                    {formatDate(edu.graduation_date)}
-                                </span>
-                            </div>
+                    <ul className="list-disc pl-5 space-y-1 text-gray-700">
+                        {data.certifications.map((c, index) => (
+                            <li key={index}>{c}</li>
                         ))}
-                    </div>
+                    </ul>
                 </section>
             )}
 
-            {/* Skills */}
-            {data.skills && data.skills.length > 0 && (
-                <section>
+            {/* Achievements */}
+            {data.achievements && data.achievements.length > 0 && (
+                <section className="mt-10">
                     <h2 className="text-sm uppercase tracking-widest mb-6 font-medium" style={{ color: accentColor }}>
-                        Skills
+                        Achievements
                     </h2>
-
-                    <div className="text-gray-700">
-                        {data.skills.join(" • ")}
-                    </div>
+                    <ul className="list-disc pl-5 space-y-1 text-gray-700">
+                        {data.achievements.map((a, index) => (
+                            <li key={index}>{a}</li>
+                        ))}
+                    </ul>
                 </section>
             )}
         </div>

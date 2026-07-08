@@ -5,6 +5,7 @@ import ResumeBuilder from "../pages/ResumeBuilder";
 import Preview from "../pages/Preview";
 import AppLayout from "../layouts/AppLayout";
 import Login from "../pages/Login";
+import ProtectedRoute from "./ProtectedRoute";
 
 export const router = createBrowserRouter([
   {
@@ -16,16 +17,21 @@ export const router = createBrowserRouter([
     element: <Login />,
   },
   {
-    element: <AppLayout />,
-    path: "app",
+    element: <ProtectedRoute />,
     children: [
       {
-        index: true,
-        element: <Dashboard />,
-      },
-      {
-        path: "builder/:resumeId",
-        element: <ResumeBuilder />,
+        element: <AppLayout />,
+        path: "app",
+        children: [
+          {
+            index: true,
+            element: <Dashboard />,
+          },
+          {
+            path: "builder/:resumeId",
+            element: <ResumeBuilder />,
+          },
+        ],
       },
     ],
   },

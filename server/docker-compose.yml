@@ -1,0 +1,53 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: resumify-server
+    container_name: resumify-api
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      MONGO_URI: mongodb://mongo:27017/resumify
+      JWT_SECRET: ${JWT_SECRET:-change-me-to-a-long-random-string}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-flash-latest}
+    ports:
+      - "5000:5000"
+    volumes:
+      # Persist uploaded files across container restarts.
+      - uploads_data:/app/uploads
+    networks:
+      - resumify-net
+
+  mongo:
+    image: mongo:7
+    container_name: resumify-mongo
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - resumify-net
+    # Expose only for local inspection; remove in production.
+    ports:
+      - "27017:27017"
+
+volumes:
+  mongo_data:
+  uploads_data:
+
+networks:
+  resumify-net:
+    driver: bridge

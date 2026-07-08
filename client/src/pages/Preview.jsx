@@ -1,40 +1,58 @@
-import { Link, useParams } from "react-router";
-import { dummyResumeData } from "../assets/assets";
 import { useEffect, useState } from "react";
+import { useParams } from "react-router";
 import ResumePreview from "../components/ResumePreview";
-import Loader from "../components/shared/Loader";
-import { ArrowLeftIcon } from "lucide-react";
+import { resumesApi } from "../api/resumes.js";
 
 const Preview = () => {
-  const {resumeId} = useParams();
-  const [isLoading, setIsLoading] = useState(true);
-  const [resumeData, setResumeData] = useState(null)
-  const loadResume = async()=>{
-    setResumeData(dummyResumeData.find((resume)=>resume._id === resumeId || null));
-    setIsLoading(false);
-  }
-  useEffect(()=>{
-    loadResume();
-  },[])
-  return resumeData? (
-  <div className="bg-slate-100">
-    <div className="max-w-3xl mx-auto py-10">
-    <ResumePreview data={resumeData} template={resumeData.template} accentColor={resumeData.accent_color} classes="py-4 bg-white"/>
-    </div>
-  </div>
-):(
-  <div>
-    {isLoading? <Loader/> : (
-      <div className="flex flex-col items-center justify-center h-screen">
-        <p className="text-center text-6xl text-slate-400 font-medium">Resume not found</p>
-        <Link to="/" className="mt-6 bg-green-500 hover:bg-green-600 text-white rounded-full px-6 h-9 m-1 ring-offset-1 ring-1 ring-green-400 flex items-center transition-colors">
-          <ArrowLeftIcon className="mr-2 size-4"/>
-          go to home page
-        </Link>
+  const { resumeId } = useParams();
+  const [resume, setResume] = useState(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    resumesApi
+      .getPublic(resumeId)
+      .then((data) => {
+        if (!active) return;
+        setResume(data.resume);
+        document.title = data.resume.title || "Resume";
+      })
+      .catch((err) => active && setError(err.message))
+      .finally(() => active && setLoading(false));
+    return () => {
+      active = false;
+    };
+  }, [resumeId]);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-slate-500">
+        Loading…
       </div>
-    )}
-  </div>
-)
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-2 text-slate-600">
+        <p className="text-lg font-semibold">Resume unavailable</p>
+        <p className="text-sm text-slate-400">{error}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-100 py-8">
+      <div className="mx-auto max-w-4xl">
+        <ResumePreview
+          data={resume}
+          template={resume.template}
+          accentColor={resume.accent_color}
+        />
+      </div>
+    </div>
+  );
 };
 
 export default Preview;

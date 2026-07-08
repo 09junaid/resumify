@@ -1,8 +1,10 @@
-import React from "react";
 import ModernTemplate from "./templates/ModernTemplate";
 import MinimalTemplate from "./templates/MinimalTemplate";
 import MinimalImageTemplate from "./templates/MinimalImageTemplate";
 import ClassicTemplate from "./templates/ClassicTemplate";
+import ProfessionalTemplate from "./templates/ProfessionalTemplate";
+import AtsTemplate from "./templates/AtsTemplate";
+import ElegantTemplate from "./templates/ElegantTemplate";
 
 const ResumePreview = ({ data, template, accentColor, classes = "" }) => {
   const renderTemplate = () => {
@@ -13,6 +15,12 @@ const ResumePreview = ({ data, template, accentColor, classes = "" }) => {
         return <MinimalTemplate data={data} accentColor={accentColor} />;
       case "minimal-image":
         return <MinimalImageTemplate data={data} accentColor={accentColor} />;
+      case "professional":
+        return <ProfessionalTemplate data={data} accentColor={accentColor} />;
+      case "ats":
+        return <AtsTemplate data={data} accentColor={accentColor} />;
+      case "elegant":
+        return <ElegantTemplate data={data} accentColor={accentColor} />;
       default:
         return <ClassicTemplate data={data} accentColor={accentColor} />;
     }

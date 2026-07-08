@@ -1,7 +1,12 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import resume from "../../assets/png/resume.jpg";
 import logo from "../../assets/svgs/resumify.svg";
 import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
+import { useAuth } from "../../context/AuthContext.jsx";
+import { useToast } from "../../context/ToastContext.jsx";
+
+const EMAIL_RE = /^\S+@\S+\.\S+$/;
 
 const LoginForm = () => {
   const query = new URLSearchParams(window.location.search);
@@ -12,12 +17,72 @@ const LoginForm = () => {
     email: "",
     password: "",
   });
-  const handleSubmit = (e) => {
+  const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const { login, register } = useAuth();
+  const toast = useToast();
+  const navigate = useNavigate();
+
+  const validate = () => {
+    const next = {};
+    if (authMode === "signup" && formData.name.trim().length < 2) {
+      next.name = "Please enter your full name.";
+    }
+    if (!EMAIL_RE.test(formData.email)) {
+      next.email = "Enter a valid email address.";
+    }
+    if (formData.password.length < 6) {
+      next.password = "Password must be at least 6 characters.";
+    }
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validate()) return;
+    setSubmitting(true);
+    try {
+      if (authMode === "login") {
+        const user = await login({
+          email: formData.email,
+          password: formData.password,
+        });
+        toast.success(`Welcome back, ${user.name}!`, "Signed in");
+      } else {
+        const user = await register(formData);
+        toast.success(`Your account is ready, ${user.name}.`, "Account created");
+      }
+      navigate("/app");
+    } catch (err) {
+      toast.error(
+        err.message || "Something went wrong. Please try again.",
+        authMode === "login" ? "Login failed" : "Registration failed",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear a field's error as the user corrects it.
+    setErrors((prev) => (prev[name] ? { ...prev, [name]: undefined } : prev));
+  };
+
+  // Shared wrapper styling; turns red when the field has an error.
+  const fieldWrap = (field) =>
+    `flex h-12 items-center gap-3 rounded-full border px-5 transition focus-within:border-green-400 focus-within:bg-white ${
+      errors[field]
+        ? "border-red-300 bg-red-50"
+        : "border-slate-200 bg-slate-50"
+    }`;
+
+  const switchMode = () => {
+    setAuthMode((prev) => (prev === "login" ? "signup" : "login"));
+    setErrors({});
   };
   return (
     <div className="relative min-h-screen overflow-hidden bg-white px-6 py-10 md:px-12 lg:px-20">
@@ -79,7 +144,11 @@ const LoginForm = () => {
                 <div className="h-px w-full bg-slate-200" />
               </div>
 
-              <form className="space-y-5" onSubmit={handleSubmit}>
+              <form
+                className="space-y-5"
+                onSubmit={handleSubmit}
+                noValidate
+              >
                 {authMode === "signup" && (
                   <div>
                     <label
@@ -88,7 +157,7 @@ const LoginForm = () => {
                     >
                       Full name
                     </label>
-                    <div className="flex h-12 items-center gap-3 rounded-full border border-slate-200 bg-slate-50 px-5 transition focus-within:border-green-400 focus-within:bg-white">
+                    <div className={fieldWrap("name")}>
                       <svg
                         width="16"
                         height="16"
@@ -112,10 +181,14 @@ const LoginForm = () => {
                         id="name"
                         type="text"
                         placeholder="Enter your full name"
-                        className="h-full w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
-                        required={authMode === "signup"}
+                        className="h-full w-full border-0 bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400 focus:ring-0"
                       />
                     </div>
+                    {errors.name && (
+                      <p className="mt-1.5 pl-5 text-xs text-red-500">
+                        {errors.name}
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -126,7 +199,7 @@ const LoginForm = () => {
                   >
                     Email address
                   </label>
-                  <div className="flex h-12 items-center gap-3 rounded-full border border-slate-200 bg-slate-50 px-5 transition focus-within:border-green-400 focus-within:bg-white">
+                  <div className={fieldWrap("email")}>
                     <svg
                       width="16"
                       height="11"
@@ -148,10 +221,14 @@ const LoginForm = () => {
                       id="email"
                       type="email"
                       placeholder="Enter your email"
-                      className="h-full w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
-                      required
+                      className="h-full w-full border-0 bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400 focus:ring-0"
                     />
                   </div>
+                  {errors.email && (
+                    <p className="mt-1.5 pl-5 text-xs text-red-500">
+                      {errors.email}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -161,7 +238,7 @@ const LoginForm = () => {
                   >
                     Password
                   </label>
-                  <div className="flex h-12 items-center gap-3 rounded-full border border-slate-200 bg-slate-50 px-5 transition focus-within:border-green-400 focus-within:bg-white">
+                  <div className={fieldWrap("password")}>
                     <svg
                       width="13"
                       height="17"
@@ -179,19 +256,40 @@ const LoginForm = () => {
                       value={formData.password}
                       onChange={handleChange}
                       id="password"
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
-                      className="h-full w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
-                      required
+                      className="h-full w-full border-0 bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400 focus:ring-0"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="text-slate-400 transition-colors hover:text-slate-600"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="size-4" />
+                      ) : (
+                        <Eye className="size-4" />
+                      )}
+                    </button>
                   </div>
+                  {errors.password && (
+                    <p className="mt-1.5 pl-5 text-xs text-red-500">
+                      {errors.password}
+                    </p>
+                  )}
                 </div>
 
                 <button
                   type="submit"
-                  className="h-12 w-full rounded-full bg-green-500 text-sm font-medium text-white transition hover:bg-green-600"
+                  disabled={submitting}
+                  className="h-12 w-full rounded-full bg-green-500 text-sm font-medium text-white transition hover:bg-green-600 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {authMode === "login" ? "Sign in" : "Create account"}
+                  {submitting
+                    ? "Please wait…"
+                    : authMode === "login"
+                      ? "Sign in"
+                      : "Create account"}
                 </button>
               </form>
 
@@ -202,11 +300,7 @@ const LoginForm = () => {
                 <button
                   type="button"
                   className="font-medium text-green-600 hover:underline"
-                  onClick={() =>
-                    setAuthMode((prev) =>
-                      prev === "login" ? "signup" : "login",
-                    )
-                  }
+                  onClick={switchMode}
                 >
                   {authMode === "login" ? "Sign up" : "Login"}
                 </button>

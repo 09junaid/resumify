@@ -1,13 +1,13 @@
-import React from "react";
 import { Link, useNavigate } from "react-router";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const Nabvar = () => {
   const navigate = useNavigate();
-  const user = {
-    name: "Junaid Arshad",
-  };
+  const { user, logout } = useAuth();
+
   const logoutUser = () => {
-    navigate("/");
+    logout();
+    navigate("/login");
   };
   return (
     <div className="shadow bg-white">
@@ -16,7 +16,7 @@ const Nabvar = () => {
           <img src="/resumify.svg" alt="logo" width={120} height={120} />
         </Link>
         <div className="flex items-center gap-4 text-sm">
-          <p className="max-sm:hidden">Hi, {user?.name}</p>
+          <p className="max-sm:hidden">Hi, {user?.name || "there"}</p>
           <button
             onClick={logoutUser}
             className="bg-white hover:bg-slate-50 border border-gray-300 px-7 py-1.5 rounded-full active:scale-95 transition-all"

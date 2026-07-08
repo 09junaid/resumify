@@ -70,6 +70,57 @@ const ClassicTemplate = ({ data, accentColor }) => {
         </section>
       )}
 
+      {/* Skills */}
+      {data.skills && data.skills.length > 0 && (
+        <section className="mb-6">
+          <h2
+            className="text-xl font-semibold mb-4"
+            style={{ color: accentColor }}
+          >
+            CORE SKILLS
+          </h2>
+
+          <div className="flex gap-4 flex-wrap">
+            {data.skills.map((skill, index) => (
+              <div key={index} className="text-gray-700">
+                • {skill}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Education */}
+      {data.education && data.education.length > 0 && (
+        <section className="mb-6">
+          <h2
+            className="text-xl font-semibold mb-4"
+            style={{ color: accentColor }}
+          >
+            EDUCATION
+          </h2>
+
+          <div className="space-y-3">
+            {data.education.map((edu, index) => (
+              <div key={index} className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    {edu.degree} {edu.field && `in ${edu.field}`}
+                  </h3>
+                  <p className="text-gray-700">{edu.institution}</p>
+                  {edu.gpa && (
+                    <p className="text-sm text-gray-600">GPA: {edu.gpa}</p>
+                  )}
+                </div>
+                <div className="text-sm text-gray-600">
+                  <p>{formatDate(edu.graduation_date)}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Experience */}
       {data.experience && data.experience.length > 0 && (
         <section className="mb-6">
@@ -139,54 +190,37 @@ const ClassicTemplate = ({ data, accentColor }) => {
         </section>
       )}
 
-      {/* Education */}
-      {data.education && data.education.length > 0 && (
+      {/* Certifications */}
+      {data.certifications && data.certifications.length > 0 && (
         <section className="mb-6">
           <h2
             className="text-xl font-semibold mb-4"
             style={{ color: accentColor }}
           >
-            EDUCATION
+            CERTIFICATIONS
           </h2>
-
-          <div className="space-y-3">
-            {data.education.map((edu, index) => (
-              <div key={index} className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-semibold text-gray-900">
-                    {edu.degree} {edu.field && `in ${edu.field}`}
-                  </h3>
-                  <p className="text-gray-700">{edu.institution}</p>
-                  {edu.gpa && (
-                    <p className="text-sm text-gray-600">GPA: {edu.gpa}</p>
-                  )}
-                </div>
-                <div className="text-sm text-gray-600">
-                  <p>{formatDate(edu.graduation_date)}</p>
-                </div>
-              </div>
+          <ul className="list-disc pl-5 space-y-1 text-gray-700">
+            {data.certifications.map((c, index) => (
+              <li key={index}>{c}</li>
             ))}
-          </div>
+          </ul>
         </section>
       )}
 
-      {/* Skills */}
-      {data.skills && data.skills.length > 0 && (
+      {/* Achievements */}
+      {data.achievements && data.achievements.length > 0 && (
         <section className="mb-6">
           <h2
             className="text-xl font-semibold mb-4"
             style={{ color: accentColor }}
           >
-            CORE SKILLS
+            ACHIEVEMENTS
           </h2>
-
-          <div className="flex gap-4 flex-wrap">
-            {data.skills.map((skill, index) => (
-              <div key={index} className="text-gray-700">
-                • {skill}
-              </div>
+          <ul className="list-disc pl-5 space-y-1 text-gray-700">
+            {data.achievements.map((a, index) => (
+              <li key={index}>{a}</li>
             ))}
-          </div>
+          </ul>
         </section>
       )}
     </div>
