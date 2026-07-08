@@ -32,7 +32,7 @@ export const env = Object.freeze({
   },
 
   uploads: {
-    dir: process.env.UPLOAD_DIR || 'uploads',
+    dir: process.env.UPLOAD_DIR || (process.env.NODE_ENV === 'production' ? '/tmp/uploads' : 'uploads'),
     maxFileSizeMb: Number(process.env.UPLOAD_MAX_FILE_SIZE_MB) || 5,
   },
 
