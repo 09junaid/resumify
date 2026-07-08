@@ -1,27 +1,28 @@
-import mongoose from 'mongoose';
-import { createApp } from '../server/src/app.js';
-import { connectDB } from '../server/src/config/db.js';
-
-// Cache across warm serverless invocations.
-let app = null;
+let cachedApp = null;
 
 async function getApp() {
-  if (app && mongoose.connection.readyState === 1) return app;
+  const mongoose = (await import('mongoose')).default;
+
+  if (cachedApp && mongoose.connection.readyState === 1) return cachedApp;
+
+  const { connectDB } = await import('../server/src/config/db.js');
+  const { createApp } = await import('../server/src/app.js');
+
   await connectDB();
-  app = createApp();
-  return app;
+  cachedApp = createApp();
+  return cachedApp;
 }
 
 export default async function handler(req, res) {
   try {
-    const application = await getApp();
-    return application(req, res);
+    const app = await getApp();
+    return app(req, res);
   } catch (err) {
     console.error('[HANDLER ERROR]', err.message, err.stack);
     return res.status(500).json({
       success: false,
-      message: err.message || 'Function crashed',
-      hint: 'Check Vercel logs for full stack trace',
+      message: err.message || 'Internal server error',
+      hint: 'Check Vercel Function Logs for details',
     });
   }
 }
